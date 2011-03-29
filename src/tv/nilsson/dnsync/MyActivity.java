@@ -2,7 +2,6 @@ package tv.nilsson.dnsync;
 
 import android.app.Activity;
 import android.os.Bundle;
-import tv.nilsson.R;
 
 public class MyActivity extends Activity
 {
