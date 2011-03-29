@@ -10,7 +10,6 @@
                         android:summary="@string/summary_customer_email"/>
   </PreferenceCategory>
   <PreferenceCategory android:title="@string/title_category_actions">
-    <PreferenceScreen android:title="@string/title_sync">
-    </PreferenceScreen>
+    <PreferenceScreen android:title="@string/title_sync" android:key="sync"/>
   </PreferenceCategory>
 </PreferenceScreen>

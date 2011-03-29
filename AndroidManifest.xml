@@ -3,7 +3,7 @@
       package="tv.nilsson.dnsync"
       android:versionCode="1"
       android:versionName="1.0">
-    <application android:label="dn-sync" android:icon="@drawable/icon">
+    <application android:label="dn-sync" android:icon="@drawable/icon" android:debuggable="true">
         <activity android:name=".MyActivity"
                   android:label="@string/app_name">
             <intent-filter>
@@ -11,5 +11,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+      <service android:name=".SyncService" android:label="sync-service" >
+        <intent-filter>
+            <action android:name="tv.nilsson.dnsync.SYNC"/>
+        </intent-filter>
+        </service>
     </application>
 </manifest> 
