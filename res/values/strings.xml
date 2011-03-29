@@ -9,4 +9,7 @@
   <string name="title_sync">Syncronize Now</string>
   <string name="title_category_actions">Actions</string>
   <string name="sync_service_started">Sync Started</string>
+  <string name="title_category_options">Options</string>
+  <string name="title_options_sync_3g">Sync over 3G</string>
+  <string name="title_options_sync_wifi">Sync over WIFI</string>
 </resources>

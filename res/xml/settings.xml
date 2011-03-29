@@ -9,6 +9,10 @@
                         android:title="@string/title_customer_email"
                         android:summary="@string/summary_customer_email"/>
   </PreferenceCategory>
+  <PreferenceCategory android:title="@string/title_category_options">
+    <CheckBoxPreference android:key="sync_3g" android:title="@string/title_options_sync_3g" android:defaultValue="false"/>
+    <CheckBoxPreference android:key="sync_wifi" android:title="@string/title_options_sync_wifi" android:defaultValue="true"/>
+  </PreferenceCategory>
   <PreferenceCategory android:title="@string/title_category_actions">
     <PreferenceScreen android:title="@string/title_sync" android:key="sync"/>
   </PreferenceCategory>
