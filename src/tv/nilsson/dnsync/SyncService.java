@@ -4,8 +4,10 @@ import android.app.DownloadManager;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -35,8 +37,9 @@ public class SyncService extends IntentService {
 
     notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
+    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
     try {
-      download("", "");
+      download(preferences.getString("customer_nr", ""), preferences.getString("customer_email", ""));
     }
     catch(IOException e) {
       e.printStackTrace();
