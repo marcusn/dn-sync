@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-  <EditTextPreference android:key="customer_nr"
-                      android:title="@string/title_customer_nr"
-                      android:summary="@string/summary_customer_nr"/>
+  <PreferenceCategory android:title="@string/title_category_auth">
+    <EditTextPreference android:key="customer_nr"
+                        android:title="@string/title_customer_nr"
+                        android:summary="@string/summary_customer_nr"/>
+    <EditTextPreference android:key="customer_email"
+                        android:title="@string/title_customer_email"
+                        android:summary="@string/summary_customer_email"/>
+  </PreferenceCategory>
+  <PreferenceCategory android:title="@string/title_category_actions">
+    <PreferenceScreen android:title="@string/title_sync">
+    </PreferenceScreen>
+  </PreferenceCategory>
 </PreferenceScreen>

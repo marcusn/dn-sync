@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MyActivity</string>
+    <string name="app_name">DN Sync</string>
   <string name="title_customer_nr">Customer Nr</string>
   <string name="summary_customer_nr">Customer Number (8 digits)</string>
+  <string name="title_customer_email">Email</string>
+  <string name="summary_customer_email">Email</string>
+  <string name="title_category_auth">Authentication</string>
+  <string name="title_sync">Syncronize Now</string>
+  <string name="title_category_actions">Actions</string>
 </resources>
