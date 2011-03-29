@@ -1,17 +1,29 @@
 package tv.nilsson.dnsync;
 
+import android.app.DownloadManager;
 import android.app.IntentService;
-import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Environment;
 import android.util.Log;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SyncService extends IntentService {
   private static final String TAG = "SyncService";
   private int NOTIFICATION = R.string.sync_service_started;
-  private NotificationManager mNM;
+  private NotificationManager notificationManager;
+  private static String SERVICE_ENDPOINT = "http://pdf.dn.se/dn-ssf/pdf/archive.jsp";
+  private static String LOGIN_ENDPOINT = "http://pdf.dn.se//dn-ssf/j_spring_security_check";
 
   public SyncService() {
     super(TAG);
@@ -20,23 +32,96 @@ public class SyncService extends IntentService {
   @Override
   protected void onHandleIntent(Intent intent) {
     Log.d(TAG, "onHandleIntent");
-    mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
-    CharSequence text = "Test";
+    notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-        // Set the icon, scrolling text and timestamp
-        Notification notification = new Notification(R.drawable.icon, text, System.currentTimeMillis());
-
-
-        Context context = getApplicationContext();
-        CharSequence contentTitle = "My notification";
-        CharSequence contentText = "Hello World!";
-        Intent notificationIntent = new Intent(this, SyncService.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-
-        notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
-
-        // Send the notification.
-        mNM.notify(NOTIFICATION, notification);
+    try {
+      download("", "");
+    }
+    catch(IOException e) {
+      e.printStackTrace();
+    }
   }
+
+  private static String login(String customerNr, String email) throws IOException {
+    HttpClient httpClient = new DefaultHttpClient();
+    Uri.Builder uriBuilder = Uri.parse(LOGIN_ENDPOINT).buildUpon();
+
+    HttpGet request = new HttpGet(uriBuilder.appendQueryParameter("j_username", customerNr).appendQueryParameter("j_password", email).toString());
+    HttpResponse response = httpClient.execute(request);
+
+    int status = response.getStatusLine().getStatusCode();
+    if (status != 200) return null;
+
+    String s = extractEntity(response);
+
+    Pattern pattern = Pattern.compile(";jsessionid=(.*?)\"");
+
+    Matcher matcher = pattern.matcher(s);
+    if (matcher.find()) {
+      String jsessionId = matcher.group(1);
+
+      return jsessionId;
+    }
+
+    return null;
+  }
+
+  private static String extractEntity(HttpResponse response) throws IOException {ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    response.getEntity().writeTo(byteArrayOutputStream);
+    return new String(byteArrayOutputStream.toByteArray());
+  }
+
+  private static Uri getDownloadUri(String sessionId) throws IOException {
+    HttpClient httpClient = new DefaultHttpClient();
+    Uri.Builder uriBuilder = Uri.parse(SERVICE_ENDPOINT + ";jsessionid=" + sessionId).buildUpon().appendQueryParameter("date", "latest");
+
+
+    HttpGet request = new HttpGet(uriBuilder.toString());
+    HttpResponse response = httpClient.execute(request);
+
+    if (response.getStatusLine().getStatusCode() != 200) return null;
+
+    String s = extractEntity(response);
+
+    Pattern pattern = Pattern.compile("\"(.*?DN\\.pdf.*?)\"");
+
+    Matcher matcher = pattern.matcher(s);
+    if (matcher.find()) {
+      String link = matcher.group(1);
+      return Uri.parse("http://pdf.dn.se" + link);
+    }
+
+    return null;
+  }
+
+  public void download(String customerNr, String email) throws IOException {
+    String sessionId = login(customerNr, email);
+    if (sessionId == null) return;
+
+    Uri downloadUri = getDownloadUri(sessionId);
+    if (downloadUri == null) return;
+
+    String filename = extractFilename(downloadUri);
+    File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+
+    downloads.mkdir();
+
+    File file = new File(downloads, filename);
+
+    if (file.exists()) return;
+
+    DownloadManager downloadMananger = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+
+    downloadMananger.enqueue(new DownloadManager.Request(downloadUri).setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename));
+
+  }
+
+  private static String extractFilename(Uri downloadUri) {
+
+    Matcher filenameMatcher = Pattern.compile("(.*?);jsessionid").matcher(downloadUri.getLastPathSegment());
+    return filenameMatcher.find() ? filenameMatcher.group(1) : null;
+  }
+
+
 }
