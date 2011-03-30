@@ -27,14 +27,18 @@ public class SyncService extends IntentService {
 
     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
     try {
-      download(preferences.getString("customer_nr", ""), preferences.getString("customer_email", ""));
+      int allowedNetwork = 0;
+      if (preferences.getBoolean("sync_3g", false)) allowedNetwork |= DownloadManager.Request.NETWORK_MOBILE;
+      if (preferences.getBoolean("sync_wifi", true)) allowedNetwork |= DownloadManager.Request.NETWORK_WIFI;
+
+      download(preferences.getString("customer_nr", ""), preferences.getString("customer_email", ""), allowedNetwork);
     }
     catch(IOException e) {
       e.printStackTrace();
     }
   }
 
-  public void download(String customerNr, String email) throws IOException {
+  public void download(String customerNr, String email, int allowedNetwork) throws IOException {
     Downloader downloader = new Downloader(customerNr, email);
 
     Downloader.DownloadInfo downloadInfo = downloader.obtainDownloadInfo();
@@ -56,6 +60,7 @@ public class SyncService extends IntentService {
 
     //downloadInfo.uri = Uri.parse("http://www.google.se");
 
-    downloadMananger.enqueue(new DownloadManager.Request(downloadInfo.uri).setDestinationUri(Uri.fromFile(file)));
+
+    downloadMananger.enqueue(new DownloadManager.Request(downloadInfo.uri).setDestinationUri(Uri.fromFile(file)).setAllowedNetworkTypes(allowedNetwork));
   }
 }
