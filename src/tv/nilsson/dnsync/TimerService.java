@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -42,18 +43,7 @@ public class TimerService extends Service {
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
 
-    notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-    Notification notification = new Notification(R.drawable.icon, "DN Autosync Started", System.currentTimeMillis());
-
-    Context context = getApplicationContext();
-    CharSequence contentTitle = "DN Autosync Started";
-    CharSequence contentText = "DN will now be automatically downloaded";
-    Intent notificationIntent = new Intent(this, TimerService.class);
-    PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-
-    notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
-    notificationManager.notify(1, notification);
+    Toast.makeText(this, "DN Autosync Started", Toast.LENGTH_SHORT).show();
 
     return START_STICKY;
   }
