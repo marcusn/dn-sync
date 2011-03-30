@@ -117,7 +117,7 @@ public class SyncService extends IntentService {
 
     DownloadManager downloadMananger = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
 
-    downloadUri = Uri.parse("http://www.google.se");
+    //downloadUri = Uri.parse("http://www.google.se");
 
     downloadMananger.enqueue(new DownloadManager.Request(downloadUri).setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename));
 
