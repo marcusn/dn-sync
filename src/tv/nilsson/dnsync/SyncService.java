@@ -23,8 +23,6 @@ import java.util.regex.Pattern;
 public class SyncService extends IntentService {
   private static final String TAG = "SyncService";
   public static final String ACTION_SYNC = "tv.nilsson.dnsync.SYNC";
-  private int NOTIFICATION = R.string.sync_service_started;
-  private NotificationManager notificationManager;
   private static String SERVICE_ENDPOINT = "http://pdf.dn.se/dn-ssf/pdf/archive.jsp";
   private static String LOGIN_ENDPOINT = "http://pdf.dn.se//dn-ssf/j_spring_security_check";
 
@@ -35,8 +33,6 @@ public class SyncService extends IntentService {
   @Override
   protected void onHandleIntent(Intent intent) {
     Log.d(TAG, "onHandleIntent");
-
-    notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
     try {
