@@ -32,6 +32,14 @@ public class TimerService extends Service {
   }
 
   @Override
+  public void onDestroy() {
+    if (timer != null) {
+      timer.cancel();
+      timer = null;
+    }
+  }
+
+  @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
 
     notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
