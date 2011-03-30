@@ -21,11 +21,12 @@ public class MyActivity extends PreferenceActivity
           public boolean onPreferenceClick(Preference preference) {
 
             Log.d(TAG, "Starting SYNC");
-            startService(new Intent("tv.nilsson.dnsync.SYNC"));
+            startService(new Intent(SyncService.ACTION_SYNC));
 
             return true;
           }
         });
 
+      startService(new Intent("tv.nilsson.dnsync.STARTTIMER"));
     }
 }

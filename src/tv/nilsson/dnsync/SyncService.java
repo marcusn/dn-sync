@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 
 public class SyncService extends IntentService {
   private static final String TAG = "SyncService";
+  public static final String ACTION_SYNC = "tv.nilsson.dnsync.SYNC";
   private int NOTIFICATION = R.string.sync_service_started;
   private NotificationManager notificationManager;
   private static String SERVICE_ENDPOINT = "http://pdf.dn.se/dn-ssf/pdf/archive.jsp";
@@ -115,6 +116,8 @@ public class SyncService extends IntentService {
     if (file.exists()) return;
 
     DownloadManager downloadMananger = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+
+    downloadUri = Uri.parse("http://www.google.se");
 
     downloadMananger.enqueue(new DownloadManager.Request(downloadUri).setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename));
 

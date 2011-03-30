@@ -19,5 +19,10 @@
             <action android:name="tv.nilsson.dnsync.SYNC"/>
         </intent-filter>
         </service>
+      <service android:name=".TimerService" android:label="timer-service">
+        <intent-filter>
+          <action android:name="tv.nilsson.dnsync.STARTTIMER"/>
+        </intent-filter>
+      </service>
     </application>
 </manifest> 
