@@ -24,7 +24,6 @@ public class TimerService extends Service {
       startService(new Intent(SyncService.ACTION_SYNC));
     }
   };
-  private NotificationManager notificationManager;
 
   @Override
   public void onCreate() {
