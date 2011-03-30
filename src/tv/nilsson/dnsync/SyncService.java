@@ -31,6 +31,8 @@ public class SyncService extends IntentService {
       if (preferences.getBoolean("sync_3g", false)) allowedNetwork |= DownloadManager.Request.NETWORK_MOBILE;
       if (preferences.getBoolean("sync_wifi", true)) allowedNetwork |= DownloadManager.Request.NETWORK_WIFI;
 
+      if (allowedNetwork == 0) return; // No sync allowed
+
       download(preferences.getString("customer_nr", ""), preferences.getString("customer_email", ""), allowedNetwork);
     }
     catch(IOException e) {
