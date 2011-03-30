@@ -18,7 +18,9 @@ public class DownloadCompleteReceiver extends BroadcastReceiver {
 
     DownloadManager downloadMananger = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
 
-    long downloadId = (Long)intent.getExtras().get(DownloadManager.EXTRA_DOWNLOAD_ID);
+    Long downloadId = (Long)intent.getExtras().get(DownloadManager.EXTRA_DOWNLOAD_ID);
+
+    if (downloadId == null) return;
 
     Cursor cursor = downloadMananger.query(new DownloadManager.Query().setFilterById(downloadId));
     cursor.moveToFirst();
