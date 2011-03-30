@@ -24,5 +24,10 @@
           <action android:name="tv.nilsson.dnsync.STARTTIMER"/>
         </intent-filter>
       </service>
+      <receiver android:name=".DownloadCompleteReceiver" android:label="download-complete" >
+        <intent-filter>
+          <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
+        </intent-filter>
+      </receiver>
     </application>
 </manifest> 
