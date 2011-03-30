@@ -24,6 +24,9 @@ public class DownloadCompleteReceiver extends BroadcastReceiver {
     cursor.moveToFirst();
 
     try {
+      int status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
+      if (status != DownloadManager.STATUS_SUCCESSFUL) return;
+
       String uriString = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
       if (uriString == null) return;
 
