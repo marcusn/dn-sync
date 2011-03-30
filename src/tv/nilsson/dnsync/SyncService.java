@@ -4,6 +4,7 @@ import android.app.DownloadManager;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -21,26 +22,32 @@ public class SyncService extends IntentService {
     super(TAG);
   }
 
+  private boolean isAllowed() {
+    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+    ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+    if (preferences.getBoolean("sync_wifi", false) && connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()) return true;
+    if (preferences.getBoolean("sync_3g", false) && connManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnected()) return true;
+
+    return false;
+  }
+
+
   @Override
   protected void onHandleIntent(Intent intent) {
     Log.d(TAG, "onHandleIntent");
 
     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
     try {
-      int allowedNetwork = 0;
-      if (preferences.getBoolean("sync_3g", false)) allowedNetwork |= DownloadManager.Request.NETWORK_MOBILE;
-      if (preferences.getBoolean("sync_wifi", true)) allowedNetwork |= DownloadManager.Request.NETWORK_WIFI;
-
-      if (allowedNetwork == 0) return; // No sync allowed
-
-      download(preferences.getString("customer_nr", ""), preferences.getString("customer_email", ""), allowedNetwork);
+      if (!isAllowed()) return;
+      download(preferences.getString("customer_nr", ""), preferences.getString("customer_email", ""));
     }
     catch(IOException e) {
       e.printStackTrace();
     }
   }
 
-  public void download(String customerNr, String email, int allowedNetwork) throws IOException {
+  public void download(String customerNr, String email) throws IOException {
     Downloader downloader = new Downloader(customerNr, email);
 
     Downloader.DownloadInfo downloadInfo = downloader.obtainDownloadInfo();
@@ -63,6 +70,6 @@ public class SyncService extends IntentService {
     //downloadInfo.uri = Uri.parse("http://www.google.se");
 
 
-    downloadMananger.enqueue(new DownloadManager.Request(downloadInfo.uri).setDestinationUri(Uri.fromFile(file)).setAllowedNetworkTypes(allowedNetwork));
+    downloadMananger.enqueue(new DownloadManager.Request(downloadInfo.uri).setDestinationUri(Uri.fromFile(file)));
   }
 }
