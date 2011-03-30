@@ -35,8 +35,8 @@ public class DownloadCompleteReceiver extends BroadcastReceiver {
         CharSequence contentTitle = "DN Downloaded";
         CharSequence contentText = "New DN: " + localFileName.getLastPathSegment();
         Intent notificationIntent = new Intent(Intent.ACTION_VIEW, localFileName);
-        notificationIntent.setType("application/pdf");
-        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
+        notificationIntent.setDataAndType(localFileName, "application/pdf");
+        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
         notificationManager.notify(1, notification);
