@@ -39,13 +39,13 @@ public class MyActivity extends PreferenceActivity
     int SECS = 1000;
     int MINS = 60 * SECS;
     Calendar cal = Calendar.getInstance();
-    Intent in = new Intent(SyncService.ACTION_SYNC);
-    PendingIntent pi = PendingIntent.getService(this, 0, in, PendingIntent.FLAG_UPDATE_CURRENT);
+    Intent in = new Intent(AlarmReceiver.ACTION_AUTOSYNC);
+    PendingIntent pi = PendingIntent.getBroadcast(this, 0, in, PendingIntent.FLAG_UPDATE_CURRENT);
 
     AlarmManager alarms = (AlarmManager)getSystemService(
       Context.ALARM_SERVICE);
     alarms.cancel(pi);
     alarms.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),
-            15 * MINS, pi);
+            30 * SECS, pi);
   }
 }

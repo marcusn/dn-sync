@@ -26,5 +26,10 @@
           <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
         </intent-filter>
       </receiver>
+      <receiver android:name=".AlarmReceiver" >
+        <intent-filter>
+          <action android:name="tv.nilsson.dnsync.AUTOSYNC"/>
+        </intent-filter>
+      </receiver>
     </application>
 </manifest> 
