@@ -62,8 +62,6 @@ public class SyncService extends IntentService {
   protected void onHandleIntent(Intent intent) {
     Log.d(TAG, "onHandleIntent");
 
-    if (0 == 0) return;
-
     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
     try {
       if (!isAllowed()) return;
