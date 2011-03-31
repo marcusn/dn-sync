@@ -8,6 +8,8 @@ public class AlarmReceiver extends BroadcastReceiver {
   public static final String ACTION_AUTOSYNC = "tv.nilsson.dnsync.AUTOSYNC";
 
   public void onReceive(Context context, Intent intent) {
+    SyncService.keepAwake(context);
+
     context.startService(new Intent(SyncService.ACTION_SYNC));
   }
 }
