@@ -46,6 +46,6 @@ public class MyActivity extends PreferenceActivity
       Context.ALARM_SERVICE);
     alarms.cancel(pi);
     alarms.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),
-            30 * SECS, pi);
+            15 * MINS, pi);
   }
 }
