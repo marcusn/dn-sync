@@ -11,6 +11,8 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -31,6 +33,12 @@ public class SyncService extends IntentService {
   public static final String ACTION_SYNC = "tv.nilsson.dnsync.SYNC";
 
   private static PowerManager.WakeLock wakeLock=null;
+  private Handler handler = new Handler() {
+    @Override
+    public void handleMessage(Message msg) {
+      Toast.makeText(getApplicationContext(), "Downloading DN", Toast.LENGTH_SHORT).show();
+    }
+  };
 
   synchronized private static PowerManager.WakeLock getLock(Context context) {
     if (wakeLock==null) {
@@ -94,7 +102,7 @@ public class SyncService extends IntentService {
   public void download(String customerNr, String email) throws IOException {
     Downloader downloader = new Downloader(customerNr, email);
 
-    Downloader.DownloadInfo downloadInfo = downloader.obtainDownloadInfo();
+    final Downloader.DownloadInfo downloadInfo = downloader.obtainDownloadInfo();
 
     if (downloadInfo == null) {
       Toast.makeText(this, "DN Download failed", Toast.LENGTH_SHORT).show();
@@ -105,13 +113,13 @@ public class SyncService extends IntentService {
     //noinspection ResultOfMethodCallIgnored
     downloads.mkdir();
 
-    File file = new File(downloads, downloadInfo.filename);
+    final File file = new File(downloads, downloadInfo.filename);
 
     if (file.exists()) return;
 
-    Uri destination = Uri.fromFile(file);
+    handler.sendEmptyMessage(0);
 
-    Toast.makeText(this, "Downloading DN", Toast.LENGTH_LONG).show();
+    Uri destination = Uri.fromFile(file);
 
     copy(downloadInfo.uri, destination);
 
