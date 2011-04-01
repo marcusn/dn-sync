@@ -110,6 +110,9 @@ public class SyncService extends IntentService {
     if (file.exists()) return;
 
     Uri destination = Uri.fromFile(file);
+
+    Toast.makeText(this, "Downloading DN", Toast.LENGTH_SHORT);
+
     copy(downloadInfo.uri, destination);
 
     notifyDownloaded(destination);
