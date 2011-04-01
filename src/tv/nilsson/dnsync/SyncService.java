@@ -17,6 +17,7 @@ import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -40,6 +41,8 @@ public class SyncService extends IntentService {
     }
   };
   private static final int ID_ONGOING = 1;
+  private NotificationManager notificationManager;
+  private Notification ongoingNotification;
 
   synchronized private static PowerManager.WakeLock getLock(Context context) {
     if (wakeLock==null) {
@@ -74,6 +77,8 @@ public class SyncService extends IntentService {
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
+    notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
     return super.onStartCommand(intent, flags, startId);
   }
 
@@ -120,9 +125,14 @@ public class SyncService extends IntentService {
 
     Uri destination = Uri.fromFile(file);
 
-    showDownloading(destination);
+    showDownloading(destination, "Downloading");
 
-    copy(downloadInfo.uri, destination);
+    try {
+      copy(downloadInfo.uri, destination);
+    }
+    finally {
+      notificationManager.cancel(ID_ONGOING);
+    }
 
     notifyDownloaded(destination);
   }
@@ -130,14 +140,21 @@ public class SyncService extends IntentService {
   private void copy(Uri source, Uri destination) throws IOException {
     ContentResolver contentResolver = getContentResolver();
 
-    InputStream inputStream = openWebUri(source);
+    HttpEntity entity = openWebUri(source);
+    InputStream inputStream = (InputStream) entity.getContent();
     OutputStream outputStream = contentResolver.openOutputStream(destination, "w");
+
+    long total = entity.getContentLength();
+    if (total == 0) return;
 
     byte[] buf = new byte[65536];
 
     int bytesRead;
+    int current = 0;
     do {
       bytesRead = inputStream.read(buf);
+      current += bytesRead;
+      showDownloading(destination, String.format("Downloading (%d%%)", (current * 100 / total)));
       Log.d(TAG, String.format("Got %d bytes", bytesRead));
       if (bytesRead > 0) {
         outputStream.write(buf, 0, bytesRead);
@@ -145,23 +162,22 @@ public class SyncService extends IntentService {
     } while (bytesRead >= 0);
   }
 
-  private InputStream openWebUri(Uri source) throws IOException {HttpClient httpClient = new DefaultHttpClient();
+  private HttpEntity openWebUri(Uri source) throws IOException {HttpClient httpClient = new DefaultHttpClient();
     HttpResponse response = httpClient.execute(new HttpGet(URI.create(source.toString())));
-    return response.getEntity().getContent();
+    return response.getEntity();
   }
 
-  private void showDownloading(Uri localFileName) {
-    Notification notification = new Notification(R.drawable.dn, "DN Downloading", System.currentTimeMillis());
+  private void showDownloading(Uri localFileName, String contentTitle) {
 
-    CharSequence contentTitle = "Downloading ";
     CharSequence contentText = localFileName.getLastPathSegment();
     Intent notificationIntent = new Intent(this, SyncService.class);
     PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
-    notification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
-    notification.flags = Notification.FLAG_ONGOING_EVENT;
-    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-    notificationManager.notify(ID_ONGOING, notification);
+    ongoingNotification = new Notification(R.drawable.dn, "DN Downloading", System.currentTimeMillis());
+    ongoingNotification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
+    ongoingNotification.flags = Notification.FLAG_ONGOING_EVENT;
+
+    notificationManager.notify(ID_ONGOING, ongoingNotification);
   }
 
   private void notifyDownloaded(Uri localFileName) {
