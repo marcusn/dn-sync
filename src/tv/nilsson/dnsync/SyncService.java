@@ -1,7 +1,10 @@
 package tv.nilsson.dnsync;
 
-import android.app.DownloadManager;
 import android.app.IntentService;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,9 +15,16 @@ import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
 
 public class SyncService extends IntentService {
   private static final String TAG = "SyncService";
@@ -99,11 +109,47 @@ public class SyncService extends IntentService {
 
     if (file.exists()) return;
 
-    DownloadManager downloadMananger = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+    Uri destination = Uri.fromFile(file);
+    copy(downloadInfo.uri, destination);
 
-    //downloadInfo.uri = Uri.parse("http://www.google.se");
+    notifyDownloaded(destination);
+  }
 
+  private void copy(Uri source, Uri destination) throws IOException {
+    ContentResolver contentResolver = getContentResolver();
 
-    downloadMananger.enqueue(new DownloadManager.Request(downloadInfo.uri).setDestinationUri(Uri.fromFile(file)));
+    InputStream inputStream = openWebUri(source);
+    OutputStream outputStream = contentResolver.openOutputStream(destination, "w");
+
+    byte[] buf = new byte[65536];
+
+    int bytesRead;
+    do {
+      bytesRead = inputStream.read(buf);
+      Log.d(TAG, String.format("Got %d bytes", bytesRead));
+      if (bytesRead > 0) {
+        outputStream.write(buf, 0, bytesRead);
+      }
+    } while (bytesRead >= 0);
+  }
+
+  private InputStream openWebUri(Uri source) throws IOException {HttpClient httpClient = new DefaultHttpClient();
+    HttpResponse response = httpClient.execute(new HttpGet(URI.create(source.toString())));
+    return response.getEntity().getContent();
+  }
+
+  private void notifyDownloaded(Uri localFileName) {
+    Notification notification = new Notification(R.drawable.icon, "DN Downloaded", System.currentTimeMillis());
+
+    CharSequence contentTitle = "DN Downloaded";
+    CharSequence contentText = "New DN: " + localFileName.getLastPathSegment();
+    Intent notificationIntent = new Intent(Intent.ACTION_VIEW, localFileName);
+    notificationIntent.setDataAndType(localFileName, "application/pdf");
+    PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+    notification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
+    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+    notificationManager.notify(1, notification);
+
   }
 }

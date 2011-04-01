@@ -1,16 +1,12 @@
 package tv.nilsson.dnsync;
 
-import android.app.DownloadManager;
-import android.content.Context;
 import android.net.Uri;
-import android.os.Environment;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
