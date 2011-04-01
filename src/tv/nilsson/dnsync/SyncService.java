@@ -39,6 +39,7 @@ public class SyncService extends IntentService {
       Toast.makeText(getApplicationContext(), "Downloading DN", Toast.LENGTH_SHORT).show();
     }
   };
+  private static final int ID_ONGOING = 1;
 
   synchronized private static PowerManager.WakeLock getLock(Context context) {
     if (wakeLock==null) {
@@ -117,9 +118,9 @@ public class SyncService extends IntentService {
 
     if (file.exists()) return;
 
-    handler.sendEmptyMessage(0);
-
     Uri destination = Uri.fromFile(file);
+
+    showDownloading(destination);
 
     copy(downloadInfo.uri, destination);
 
@@ -149,6 +150,20 @@ public class SyncService extends IntentService {
     return response.getEntity().getContent();
   }
 
+  private void showDownloading(Uri localFileName) {
+    Notification notification = new Notification(R.drawable.icon, "DN Downloading", System.currentTimeMillis());
+
+    CharSequence contentTitle = "Downloading ";
+    CharSequence contentText = localFileName.getLastPathSegment();
+    Intent notificationIntent = new Intent(this, SyncService.class);
+    PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+    notification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
+    notification.flags = Notification.FLAG_ONGOING_EVENT;
+    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+    notificationManager.notify(ID_ONGOING, notification);
+  }
+
   private void notifyDownloaded(Uri localFileName) {
     Notification notification = new Notification(R.drawable.icon, "DN Downloaded", System.currentTimeMillis());
 
@@ -160,7 +175,7 @@ public class SyncService extends IntentService {
 
     notification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
     NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-    notificationManager.notify(1, notification);
+    notificationManager.notify(ID_ONGOING, notification);
 
   }
 }
