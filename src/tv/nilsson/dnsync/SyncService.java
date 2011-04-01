@@ -151,7 +151,7 @@ public class SyncService extends IntentService {
   }
 
   private void showDownloading(Uri localFileName) {
-    Notification notification = new Notification(R.drawable.icon, "DN Downloading", System.currentTimeMillis());
+    Notification notification = new Notification(R.drawable.dn, "DN Downloading", System.currentTimeMillis());
 
     CharSequence contentTitle = "Downloading ";
     CharSequence contentText = localFileName.getLastPathSegment();
@@ -165,7 +165,7 @@ public class SyncService extends IntentService {
   }
 
   private void notifyDownloaded(Uri localFileName) {
-    Notification notification = new Notification(R.drawable.icon, "DN Downloaded", System.currentTimeMillis());
+    Notification notification = new Notification(R.drawable.dn, "DN Downloaded", System.currentTimeMillis());
 
     CharSequence contentTitle = "DN Downloaded";
     CharSequence contentText = "New DN: " + localFileName.getLastPathSegment();
