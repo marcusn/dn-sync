@@ -197,6 +197,7 @@ public class SyncService extends IntentService {
     PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
     notification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
+    notification.flags = Notification.FLAG_AUTO_CANCEL;
     NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
     notificationManager.notify(ID_ONGOING, notification);
 
