@@ -150,11 +150,18 @@ public class SyncService extends IntentService {
     byte[] buf = new byte[65536];
 
     int bytesRead;
-    int current = 0;
+    long current = 0;
+    int progress = 0;
     do {
       bytesRead = inputStream.read(buf);
       current += bytesRead;
-      showDownloading(destination, String.format("Downloading (%d%%)", (current * 100 / total)));
+      {
+        int newProgress = (int) (current * 100 / total);
+        if (newProgress != progress) {
+          progress = newProgress;
+          showDownloading(destination, String.format("Downloading (%d%%)", progress));
+        }
+      }
       Log.d(TAG, String.format("Got %d bytes", bytesRead));
       if (bytesRead > 0) {
         outputStream.write(buf, 0, bytesRead);
