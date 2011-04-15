@@ -38,7 +38,7 @@ public class Downloader {
       Uri downloadUri = getDownloadUri(doLogin());
       return new DownloadInfo(downloadUri, extractFilename(downloadUri));
     }
-    catch(IOException e) {
+    catch(Throwable e) {
       return null;
     }
   }
