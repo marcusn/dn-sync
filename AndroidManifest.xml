@@ -27,5 +27,10 @@
           <action android:name="tv.nilsson.dnsync.AUTOSYNC"/>
         </intent-filter>
       </receiver>
+      <receiver android:name=".AlarmScheduler" android:label="alarm-scheduler">
+        <intent-filter>
+          <action android:name="tv.nilsson.dnsync.SCHEDULE"/>
+        </intent-filter>
+      </receiver>
     </application>
 </manifest> 
