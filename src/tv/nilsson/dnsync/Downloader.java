@@ -36,9 +36,12 @@ public class Downloader {
   public DownloadInfo obtainDownloadInfo() {
     try {
       Uri downloadUri = getDownloadUri(doLogin());
+      if (downloadUri == null) return null;
+
       return new DownloadInfo(downloadUri, extractFilename(downloadUri));
     }
     catch(Throwable e) {
+      e.printStackTrace();
       return null;
     }
   }
