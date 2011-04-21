@@ -195,8 +195,9 @@ public class SyncService extends IntentService {
     CharSequence contentTitle = "DN Downloaded";
     CharSequence contentText = "New DN: " + localFileName.getLastPathSegment();
     Intent notificationIntent = new Intent(Intent.ACTION_VIEW, localFileName);
+    notificationIntent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
     notificationIntent.setDataAndType(localFileName, "application/pdf");
-    PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
     notification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
     notification.flags = Notification.FLAG_AUTO_CANCEL;
