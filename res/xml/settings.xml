@@ -4,10 +4,16 @@
   <PreferenceCategory android:title="@string/title_category_auth">
     <EditTextPreference android:key="customer_nr"
                         android:title="@string/title_customer_nr"
-                        android:summary="@string/summary_customer_nr"/>
+                        android:summary="@string/summary_customer_nr"
+                        android:inputType="number"
+                        android:maxLength="8"
+
+        />
     <EditTextPreference android:key="customer_email"
                         android:title="@string/title_customer_email"
-                        android:summary="@string/summary_customer_email"/>
+                        android:summary="@string/summary_customer_email"
+                        android:inputType="textEmailAddress"
+        />
   </PreferenceCategory>
   <PreferenceCategory android:title="@string/title_category_options">
     <CheckBoxPreference android:key="sync_3g" android:title="@string/title_options_sync_3g" android:defaultValue="false"/>
