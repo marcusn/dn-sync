@@ -16,6 +16,7 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.RemoteViews;
 import android.widget.Toast;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -163,8 +164,10 @@ public class SyncService extends IntentService {
       {
         int newProgress = (int) (current * 100 / total);
         if (newProgress != progress) {
+          ongoingNotification.contentView.setProgressBar(R.id.download_progress_progress, 100, newProgress, false);
+          notificationManager.notify(ID_ONGOING, ongoingNotification);
+
           progress = newProgress;
-          showDownloading(destination, String.format("Downloading (%d%%)", progress));
         }
       }
       Log.d(TAG, String.format("Got %d bytes", bytesRead));
@@ -186,7 +189,15 @@ public class SyncService extends IntentService {
     PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
     ongoingNotification = new Notification(R.drawable.dn, "DN Downloading", System.currentTimeMillis());
-    ongoingNotification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
+    ongoingNotification.contentIntent = contentIntent;
+
+    RemoteViews contentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.download_progress);
+    contentView.setImageViewResource(R.id.download_progress_icon, R.drawable.dn);
+    contentView.setTextViewText(R.id.download_progress_text, "DN Downloading");
+    contentView.setProgressBar(R.id.download_progress_progress, 100, 0, false);
+
+    ongoingNotification.contentView = contentView;
+
     ongoingNotification.flags = Notification.FLAG_ONGOING_EVENT;
 
     notificationManager.notify(ID_ONGOING, ongoingNotification);
