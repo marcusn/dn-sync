@@ -12,7 +12,7 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.Message;
+import android.os.Looper;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -35,12 +35,7 @@ public class SyncService extends IntentService {
   public static final String ACTION_SYNC = "tv.nilsson.dnsync.SYNC";
 
   private static PowerManager.WakeLock wakeLock=null;
-  private Handler handler = new Handler() {
-    @Override
-    public void handleMessage(Message msg) {
-      Toast.makeText(getApplicationContext(), "Downloading DN", Toast.LENGTH_SHORT).show();
-    }
-  };
+  private Handler handler;
   private static final int ID_ONGOING = 1;
   private NotificationManager notificationManager;
   private Notification ongoingNotification;
@@ -76,8 +71,19 @@ public class SyncService extends IntentService {
     return false;
   }
 
+  private void toast(final String message) {
+    final Context context = this;
+    handler.post(new Runnable() {
+      public void run() {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+      }
+    });
+  }
+
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
+    handler = new Handler(Looper.getMainLooper());
+
     notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
     return super.onStartCommand(intent, flags, startId);
@@ -95,6 +101,13 @@ public class SyncService extends IntentService {
     catch(IOException e) {
       e.printStackTrace();
     }
+    catch(AuthenticationFailedException e) {
+      toast("DN Authentication failed, check username and password");
+    }
+    catch(DownloadException e) {
+      e.printStackTrace();
+      toast("DN Download failed");
+    }
     finally {
       releaseWakeLock();
     }
@@ -106,7 +119,7 @@ public class SyncService extends IntentService {
     }
   }
 
-  public void download(String customerNr, String email) throws IOException {
+  public void download(String customerNr, String email) throws IOException, DownloadException {
     if ("".equals(customerNr) || "".equals(email)) return;
 
     customerNr = customerNr.trim();
@@ -115,11 +128,6 @@ public class SyncService extends IntentService {
     Downloader downloader = new Downloader(customerNr, email);
 
     final Downloader.DownloadInfo downloadInfo = downloader.obtainDownloadInfo();
-
-    if (downloadInfo == null) {
-      Toast.makeText(this, "DN Download failed", Toast.LENGTH_SHORT).show();
-      return;
-    }
 
     File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
     //noinspection ResultOfMethodCallIgnored

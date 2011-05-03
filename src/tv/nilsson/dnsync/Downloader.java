@@ -1,6 +1,7 @@
 package tv.nilsson.dnsync;
 
 import android.net.Uri;
+import android.util.Log;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -43,7 +44,7 @@ public class Downloader {
     catch (IOException e) {
       throw new DownloadIOException();
     }
-    catch(Throwable e) {
+    catch(RuntimeException e) {
       throw new DownloadInternalErrorException(e);
     }
   }
@@ -61,6 +62,8 @@ public class Downloader {
     }
 
     String s = extractEntity(response);
+
+    if (s.contains("j_spring_security_check")) throw new AuthenticationFailedException();
 
     Pattern pattern = Pattern.compile(";jsessionid=(.*?)\"");
 
