@@ -17,6 +17,7 @@ public class Downloader {
 
   private String customerNr;
   private String email;
+  private String sessionId;
 
   public static class DownloadInfo {
     public Uri uri;
@@ -33,20 +34,21 @@ public class Downloader {
     this.email = email;
   }
 
-  public DownloadInfo obtainDownloadInfo() {
+  public DownloadInfo obtainDownloadInfo() throws DownloadException {
     try {
       Uri downloadUri = getDownloadUri(doLogin());
-      if (downloadUri == null) return null;
 
       return new DownloadInfo(downloadUri, extractFilename(downloadUri));
     }
+    catch (IOException e) {
+      throw new DownloadIOException();
+    }
     catch(Throwable e) {
-      e.printStackTrace();
-      return null;
+      throw new DownloadInternalErrorException(e);
     }
   }
 
-  private String doLogin() throws IOException {
+  private String doLogin() throws IOException, DownloadException {
     HttpClient httpClient = new DefaultHttpClient();
     Uri.Builder uriBuilder = Uri.parse(LOGIN_ENDPOINT).buildUpon();
 
@@ -54,7 +56,9 @@ public class Downloader {
     HttpResponse response = httpClient.execute(request);
 
     int status = response.getStatusLine().getStatusCode();
-    if (status != 200) return null;
+    if (status != 200) {
+      throw new AuthenticationFailedException();
+    }
 
     String s = extractEntity(response);
 
@@ -67,15 +71,21 @@ public class Downloader {
       return jsessionId;
     }
 
-    return null;
+    throw new DownloadUnexpectedResponseException();
   }
 
-  private String extractEntity(HttpResponse response) throws IOException {ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    response.getEntity().writeTo(byteArrayOutputStream);
-    return new String(byteArrayOutputStream.toByteArray());
+  private String extractEntity(HttpResponse response) throws DownloadException {
+    try {
+      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+      response.getEntity().writeTo(byteArrayOutputStream);
+      return new String(byteArrayOutputStream.toByteArray());
+    }
+    catch(IOException e) {
+      throw new DownloadUnexpectedResponseException();
+    }
   }
 
-  private Uri getDownloadUri(String sessionId) throws IOException {
+  private Uri getDownloadUri(String sessionId) throws IOException, DownloadException {
     HttpClient httpClient = new DefaultHttpClient();
     Uri.Builder uriBuilder = Uri.parse(SERVICE_ENDPOINT + ";jsessionid=" + sessionId).buildUpon().appendQueryParameter("date", "latest");
 
@@ -83,7 +93,7 @@ public class Downloader {
     HttpGet request = new HttpGet(uriBuilder.toString());
     HttpResponse response = httpClient.execute(request);
 
-    if (response.getStatusLine().getStatusCode() != 200) return null;
+    if (response.getStatusLine().getStatusCode() != 200) throw new DownloadUnexpectedResponseException();
 
     String s = extractEntity(response);
 
@@ -95,7 +105,7 @@ public class Downloader {
       return Uri.parse("http://pdf.dn.se" + link);
     }
 
-    return null;
+    throw new DownloadUnexpectedResponseException();
   }
 
   private static String extractFilename(Uri downloadUri) {
