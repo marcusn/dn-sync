@@ -108,6 +108,9 @@ public class SyncService extends IntentService {
   public void download(String customerNr, String email) throws IOException {
     if ("".equals(customerNr) || "".equals(email)) return;
 
+    customerNr = customerNr.trim();
+    email = email.trim();
+
     Downloader downloader = new Downloader(customerNr, email);
 
     final Downloader.DownloadInfo downloadInfo = downloader.obtainDownloadInfo();
