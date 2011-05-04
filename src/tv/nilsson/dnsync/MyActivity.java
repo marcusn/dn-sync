@@ -72,10 +72,18 @@ public class MyActivity extends PreferenceActivity
           // We've bound to LocalService, cast the IBinder and get LocalService instance
           SyncService.LocalBinder binder = (SyncService.LocalBinder) service;
           syncService = binder.getService();
+
+          updateStatus();
       }
 
       public void onServiceDisconnected(ComponentName arg0) {
         syncService = null;
       }
   };
+
+  private void updateStatus() {
+    Preference preference = findPreference("sync_enabled");
+
+    preference.setSummary("YES!");
+  }
 }
