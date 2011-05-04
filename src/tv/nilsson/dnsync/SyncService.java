@@ -10,8 +10,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
@@ -40,6 +42,13 @@ public class SyncService extends IntentService {
   private NotificationManager notificationManager;
   private Notification ongoingNotification;
 
+  private final IBinder mBinder = new LocalBinder();
+  public class LocalBinder extends Binder {
+        SyncService getService() {
+            // Return this instance of LocalService so clients can call public methods
+            return SyncService.this;
+        }
+    }
   synchronized private static PowerManager.WakeLock getLock(Context context) {
     if (wakeLock==null) {
       PowerManager mgr=(PowerManager)context.getSystemService(Context.POWER_SERVICE);
@@ -59,6 +68,11 @@ public class SyncService extends IntentService {
 
   public SyncService() {
     super(TAG);
+  }
+
+  @Override
+  public IBinder onBind(Intent intent) {
+    return mBinder;
   }
 
   private boolean isAllowed() {
@@ -102,11 +116,11 @@ public class SyncService extends IntentService {
       e.printStackTrace();
     }
     catch(AuthenticationFailedException e) {
-      toast("DN Authentication failed, check username and password");
+      //toast("DN Authentication failed, check username and password");
     }
     catch(DownloadException e) {
       e.printStackTrace();
-      toast("DN Download failed");
+      //toast("DN Download failed");
     }
     finally {
       releaseWakeLock();
