@@ -10,9 +10,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.Message;
+import android.os.IBinder;
+import android.os.Looper;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -29,22 +31,30 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SyncService extends IntentService {
   private static final String TAG = "SyncService";
   public static final String ACTION_SYNC = "tv.nilsson.dnsync.SYNC";
 
   private static PowerManager.WakeLock wakeLock=null;
-  private Handler handler = new Handler() {
-    @Override
-    public void handleMessage(Message msg) {
-      Toast.makeText(getApplicationContext(), "Downloading DN", Toast.LENGTH_SHORT).show();
-    }
-  };
+  private Handler handler;
   private static final int ID_ONGOING = 1;
   private NotificationManager notificationManager;
   private Notification ongoingNotification;
 
+  private final IBinder mBinder = new LocalBinder();
+
+  private List<SyncStatus.Listener> syncStatusListeners = new ArrayList<SyncStatus.Listener>();
+  private SyncStatus syncStatus = new SyncStatus("");
+
+  public class LocalBinder extends Binder {
+        SyncService getService() {
+            // Return this instance of LocalService so clients can call public methods
+            return SyncService.this;
+        }
+    }
   synchronized private static PowerManager.WakeLock getLock(Context context) {
     if (wakeLock==null) {
       PowerManager mgr=(PowerManager)context.getSystemService(Context.POWER_SERVICE);
@@ -54,6 +64,26 @@ public class SyncService extends IntentService {
     }
 
     return(wakeLock);
+  }
+
+  public boolean addSyncStatusListener(SyncStatus.Listener listener) {
+    return syncStatusListeners.add(listener);
+  }
+
+  public void removeSyncStatusListener(SyncStatus.Listener listener) {
+    syncStatusListeners.remove(listener);
+  }
+
+  private void setSyncStatus(SyncStatus syncStatus) {
+    this.syncStatus = syncStatus;
+
+    for(SyncStatus.Listener listener : syncStatusListeners) {
+      listener.onSyncStatusChanged();
+    }
+  }
+
+  public SyncStatus getSyncStatus() {
+    return syncStatus;
   }
 
   public static void keepAwake(Context context) {
@@ -66,8 +96,15 @@ public class SyncService extends IntentService {
     super(TAG);
   }
 
+  @Override
+  public IBinder onBind(Intent intent) {
+    return mBinder;
+  }
+
   private boolean isAllowed() {
     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+    if (!preferences.getBoolean("sync_enabled", false)) return false;
 
     ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
     if (preferences.getBoolean("sync_wifi", false) && connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()) return true;
@@ -76,8 +113,19 @@ public class SyncService extends IntentService {
     return false;
   }
 
+  private void toast(final String message) {
+    final Context context = this;
+    handler.post(new Runnable() {
+      public void run() {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+      }
+    });
+  }
+
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
+    handler = new Handler(Looper.getMainLooper());
+
     notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
     return super.onStartCommand(intent, flags, startId);
@@ -90,9 +138,18 @@ public class SyncService extends IntentService {
     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
     try {
       if (!isAllowed()) return;
+      setSyncStatus(new SyncStatus("Syncing"));
       download(preferences.getString("customer_nr", ""), preferences.getString("customer_email", ""));
     }
     catch(IOException e) {
+      setSyncStatus(new SyncStatus("Sync Failed"));
+      e.printStackTrace();
+    }
+    catch(AuthenticationFailedException e) {
+      setSyncStatus(new SyncStatus("Authentication failed, check authentication details"));
+    }
+    catch(DownloadException e) {
+      setSyncStatus(new SyncStatus("Download Failed"));
       e.printStackTrace();
     }
     finally {
@@ -106,7 +163,7 @@ public class SyncService extends IntentService {
     }
   }
 
-  public void download(String customerNr, String email) throws IOException {
+  public void download(String customerNr, String email) throws IOException, DownloadException {
     if ("".equals(customerNr) || "".equals(email)) return;
 
     customerNr = customerNr.trim();
@@ -116,22 +173,22 @@ public class SyncService extends IntentService {
 
     final Downloader.DownloadInfo downloadInfo = downloader.obtainDownloadInfo();
 
-    if (downloadInfo == null) {
-      Toast.makeText(this, "DN Download failed", Toast.LENGTH_SHORT).show();
-      return;
-    }
-
     File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
     //noinspection ResultOfMethodCallIgnored
     downloads.mkdir();
 
     final File file = new File(downloads, downloadInfo.filename);
 
-    if (file.exists()) return;
+    if (file.exists()) {
+      setSyncStatus(new SyncStatus("No new DN is available"));
+      return;
+    }
 
     Uri destination = Uri.fromFile(file);
 
     showDownloading(destination, "Downloading");
+
+    setSyncStatus(new SyncStatus("Downloading"));
 
     try {
       copy(downloadInfo.uri, destination);
@@ -141,6 +198,8 @@ public class SyncService extends IntentService {
     }
 
     notifyDownloaded(destination);
+
+    setSyncStatus(new SyncStatus("Downloaded"));
   }
 
   private void copy(Uri source, Uri destination) throws IOException {
@@ -166,6 +225,7 @@ public class SyncService extends IntentService {
         if (newProgress != progress) {
           ongoingNotification.contentView.setProgressBar(R.id.download_progress_progress, 100, newProgress, false);
           notificationManager.notify(ID_ONGOING, ongoingNotification);
+          setSyncStatus(new SyncStatus("Downloaded " + newProgress + "%"));
 
           progress = newProgress;
         }
