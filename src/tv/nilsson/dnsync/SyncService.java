@@ -78,6 +78,8 @@ public class SyncService extends IntentService {
   private boolean isAllowed() {
     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
+    if (!preferences.getBoolean("sync_enabled", false)) return false;
+
     ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
     if (preferences.getBoolean("sync_wifi", false) && connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()) return true;
     if (preferences.getBoolean("sync_3g", false) && connManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnected()) return true;
