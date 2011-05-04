@@ -5,19 +5,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.util.Log;
-import android.view.View;
 
-public class MyActivity extends PreferenceActivity
-{
+public class MyActivity extends PreferenceActivity implements SyncStatus.Listener {
     private SyncService syncService;
 
     private String TAG = "MyActivity";
 
-    private View statusView;
+    private Handler handler;
 
   /** Called when the activity is first created. */
     @Override
@@ -37,7 +37,7 @@ public class MyActivity extends PreferenceActivity
           }
         });
 
-      statusView = findViewById(R.layout.sync_status);
+      handler = new Handler(Looper.getMainLooper());
 
       //getListView().addFooterView(statusView);
 
@@ -60,6 +60,8 @@ public class MyActivity extends PreferenceActivity
         super.onStop();
         // Unbind from the service
         if (syncService != null) {
+            syncService.removeSyncStatusListener(MyActivity.this);
+
             unbindService(mConnection);
             syncService = null;
        }
@@ -72,6 +74,7 @@ public class MyActivity extends PreferenceActivity
           // We've bound to LocalService, cast the IBinder and get LocalService instance
           SyncService.LocalBinder binder = (SyncService.LocalBinder) service;
           syncService = binder.getService();
+          syncService.addSyncStatusListener(MyActivity.this);
 
           updateStatus();
       }
@@ -82,8 +85,21 @@ public class MyActivity extends PreferenceActivity
   };
 
   private void updateStatus() {
-    Preference preference = findPreference("sync_enabled");
+    handler.post(new Runnable() {
+      public void run() {
+        String status = "";
+        if (syncService != null) {
+          status = syncService.getSyncStatus().getMessage();
+        }
 
-    preference.setSummary("YES!");
+        Preference preference = findPreference("sync_enabled");
+
+        preference.setSummary(status);
+      }
+    });
+  }
+
+  public void onSyncStatusChanged() {
+    updateStatus();
   }
 }

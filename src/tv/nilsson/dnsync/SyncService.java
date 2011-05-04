@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SyncService extends IntentService {
   private static final String TAG = "SyncService";
@@ -43,6 +45,10 @@ public class SyncService extends IntentService {
   private Notification ongoingNotification;
 
   private final IBinder mBinder = new LocalBinder();
+
+  private List<SyncStatus.Listener> syncStatusListeners = new ArrayList<SyncStatus.Listener>();
+  private SyncStatus syncStatus = new SyncStatus("");
+
   public class LocalBinder extends Binder {
         SyncService getService() {
             // Return this instance of LocalService so clients can call public methods
@@ -58,6 +64,26 @@ public class SyncService extends IntentService {
     }
 
     return(wakeLock);
+  }
+
+  public boolean addSyncStatusListener(SyncStatus.Listener listener) {
+    return syncStatusListeners.add(listener);
+  }
+
+  public void removeSyncStatusListener(SyncStatus.Listener listener) {
+    syncStatusListeners.remove(listener);
+  }
+
+  private void setSyncStatus(SyncStatus syncStatus) {
+    this.syncStatus = syncStatus;
+
+    for(SyncStatus.Listener listener : syncStatusListeners) {
+      listener.onSyncStatusChanged();
+    }
+  }
+
+  public SyncStatus getSyncStatus() {
+    return syncStatus;
   }
 
   public static void keepAwake(Context context) {
@@ -112,17 +138,19 @@ public class SyncService extends IntentService {
     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
     try {
       if (!isAllowed()) return;
+      setSyncStatus(new SyncStatus("Syncing"));
       download(preferences.getString("customer_nr", ""), preferences.getString("customer_email", ""));
     }
     catch(IOException e) {
+      setSyncStatus(new SyncStatus("Sync Failed"));
       e.printStackTrace();
     }
     catch(AuthenticationFailedException e) {
-      //toast("DN Authentication failed, check username and password");
+      setSyncStatus(new SyncStatus("Authentication failed, check authentication details"));
     }
     catch(DownloadException e) {
+      setSyncStatus(new SyncStatus("Download Failed"));
       e.printStackTrace();
-      //toast("DN Download failed");
     }
     finally {
       releaseWakeLock();
@@ -151,11 +179,16 @@ public class SyncService extends IntentService {
 
     final File file = new File(downloads, downloadInfo.filename);
 
-    if (file.exists()) return;
+    if (file.exists()) {
+      setSyncStatus(new SyncStatus("No new DN is available"));
+      return;
+    }
 
     Uri destination = Uri.fromFile(file);
 
     showDownloading(destination, "Downloading");
+
+    setSyncStatus(new SyncStatus("Downloading"));
 
     try {
       copy(downloadInfo.uri, destination);
@@ -165,6 +198,8 @@ public class SyncService extends IntentService {
     }
 
     notifyDownloaded(destination);
+
+    setSyncStatus(new SyncStatus("Downloaded"));
   }
 
   private void copy(Uri source, Uri destination) throws IOException {
@@ -190,6 +225,7 @@ public class SyncService extends IntentService {
         if (newProgress != progress) {
           ongoingNotification.contentView.setProgressBar(R.id.download_progress_progress, 100, newProgress, false);
           notificationManager.notify(ID_ONGOING, ongoingNotification);
+          setSyncStatus(new SyncStatus("Downloaded " + newProgress + "%"));
 
           progress = newProgress;
         }
