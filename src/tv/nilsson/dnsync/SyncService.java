@@ -196,6 +196,11 @@ public class SyncService extends IntentService {
     try {
       copy(downloadInfo.uri, destination);
     }
+    catch(IOException e) {
+        setSyncStatus(new SyncStatus("DN Download failed"));
+        file.delete();
+        return;
+    }
     finally {
       notificationManager.cancel(ID_ONGOING);
     }
