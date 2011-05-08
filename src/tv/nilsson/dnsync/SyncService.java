@@ -164,7 +164,10 @@ public class SyncService extends IntentService {
   }
 
   public void download(String customerNr, String email) throws IOException, DownloadException {
-    if ("".equals(customerNr) || "".equals(email)) return;
+    if ("".equals(customerNr) || "".equals(email)) {
+        setSyncStatus(new SyncStatus("No authentication details"));
+        return;
+    }
 
     customerNr = customerNr.trim();
     email = email.trim();
