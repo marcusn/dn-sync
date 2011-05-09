@@ -138,7 +138,7 @@ public class SyncService extends IntentService {
     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
     try {
       if (!isAllowed()) return;
-      setSyncStatus(new SyncStatus("Syncing"));
+      setSyncStatus(new SyncStatus("Contacting DN"));
       download(preferences.getString("customer_nr", ""), preferences.getString("customer_email", ""));
     }
     catch(IOException e) {
