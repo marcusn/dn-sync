@@ -194,7 +194,13 @@ public class SyncService extends IntentService {
     setSyncStatus(new SyncStatus("Downloading"));
 
     try {
-      copy(downloadInfo.uri, destination);
+        long totalSize = copy(downloadInfo.uri, destination);
+
+        if (totalSize != file.length()) {
+            setSyncStatus(new SyncStatus("DN Download failed, invalid file size"));
+            file.delete();
+            return;
+        }
     }
     catch(IOException e) {
         setSyncStatus(new SyncStatus("DN Download failed"));
@@ -210,7 +216,7 @@ public class SyncService extends IntentService {
     setSyncStatus(new SyncStatus("Downloaded"));
   }
 
-  private void copy(Uri source, Uri destination) throws IOException {
+  private long copy(Uri source, Uri destination) throws IOException {
     ContentResolver contentResolver = getContentResolver();
 
     HttpEntity entity = openWebUri(source);
@@ -218,7 +224,7 @@ public class SyncService extends IntentService {
     OutputStream outputStream = contentResolver.openOutputStream(destination, "w");
 
     long total = entity.getContentLength();
-    if (total == 0) return;
+    if (total == 0) return 0;
 
     byte[] buf = new byte[65536];
 
@@ -243,6 +249,10 @@ public class SyncService extends IntentService {
         outputStream.write(buf, 0, bytesRead);
       }
     } while (bytesRead >= 0);
+
+      outputStream.close();
+
+      return total;
   }
 
   private HttpEntity openWebUri(Uri source) throws IOException {HttpClient httpClient = new DefaultHttpClient();
