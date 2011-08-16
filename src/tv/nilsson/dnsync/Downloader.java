@@ -1,7 +1,6 @@
 package tv.nilsson.dnsync;
 
 import android.net.Uri;
-import android.util.Log;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -50,7 +49,7 @@ public class Downloader {
   }
 
   private String doLogin() throws IOException, DownloadException {
-    HttpClient httpClient = new DefaultHttpClient();
+    HttpClient httpClient = newHttpClient();
     Uri.Builder uriBuilder = Uri.parse(LOGIN_ENDPOINT).buildUpon();
 
     HttpGet request = new HttpGet(uriBuilder.appendQueryParameter("j_username", customerNr).appendQueryParameter("j_password", email).toString());
@@ -89,7 +88,7 @@ public class Downloader {
   }
 
   private Uri getDownloadUri(String sessionId) throws IOException, DownloadException {
-    HttpClient httpClient = new DefaultHttpClient();
+    HttpClient httpClient = newHttpClient();
     Uri.Builder uriBuilder = Uri.parse(SERVICE_ENDPOINT + ";jsessionid=" + sessionId).buildUpon().appendQueryParameter("date", "latest");
 
 
@@ -110,6 +109,8 @@ public class Downloader {
 
     throw new DownloadUnexpectedResponseException();
   }
+
+  public static HttpClient newHttpClient() {return new DefaultHttpClient();}
 
   private static String extractFilename(Uri downloadUri) {
 

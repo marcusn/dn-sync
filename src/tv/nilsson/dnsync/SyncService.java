@@ -24,7 +24,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -255,7 +254,8 @@ public class SyncService extends IntentService {
       return total;
   }
 
-  private HttpEntity openWebUri(Uri source) throws IOException {HttpClient httpClient = new DefaultHttpClient();
+  private HttpEntity openWebUri(Uri source) throws IOException {
+    HttpClient httpClient = Downloader.newHttpClient();
     HttpResponse response = httpClient.execute(new HttpGet(URI.create(source.toString())));
     return response.getEntity();
   }
