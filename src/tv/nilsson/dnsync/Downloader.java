@@ -5,6 +5,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,7 +17,7 @@ import java.util.regex.Pattern;
 public class Downloader {
   private static String SERVICE_ENDPOINT = "http://pdf.dn.se/dn-ssf/pdf/archive.jsp";
   private static String LOGIN_ENDPOINT = "http://pdf.dn.se//dn-ssf/j_spring_security_check";
-
+  public static final int TIMEOUT_MS = 30000;
   private String customerNr;
   private String email;
   private String sessionId;
@@ -110,7 +113,14 @@ public class Downloader {
     throw new DownloadUnexpectedResponseException();
   }
 
-  public static HttpClient newHttpClient() {return new DefaultHttpClient();}
+  public static HttpClient newHttpClient() {
+    HttpParams httpParameters = new BasicHttpParams();
+
+    HttpConnectionParams.setConnectionTimeout(httpParameters, TIMEOUT_MS);
+    HttpConnectionParams.setSoTimeout(httpParameters, TIMEOUT_MS);
+
+    return new DefaultHttpClient(httpParameters);
+  }
 
   private static String extractFilename(Uri downloadUri) {
 
