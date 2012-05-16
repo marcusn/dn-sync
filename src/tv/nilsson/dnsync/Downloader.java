@@ -69,7 +69,7 @@ public class Downloader {
 
       String s = extractEntity(response);
 
-      Pattern pattern = Pattern.compile("Alla delar.*(\\d+)-(\\d+)-(\\d+)");
+      Pattern pattern = Pattern.compile("Alla delar.*?(\\d+)-(\\d+)-(\\d+)");
 
       Matcher matcher = pattern.matcher(s);
       if (matcher.find()) {
