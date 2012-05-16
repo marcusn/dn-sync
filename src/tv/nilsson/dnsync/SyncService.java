@@ -170,6 +170,7 @@ public class SyncService extends IntentService {
 
     customerNr = customerNr.trim();
     firstName = firstName.trim();
+    lastName = lastName.trim();
 
     Downloader downloader = new Downloader(customerNr, firstName, lastName);
 
