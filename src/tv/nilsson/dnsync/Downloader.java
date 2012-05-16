@@ -1,6 +1,7 @@
 package tv.nilsson.dnsync;
 
 import android.net.Uri;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -21,6 +22,7 @@ import org.apache.http.protocol.HttpContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -160,4 +162,18 @@ public class Downloader {
 
     return new DefaultHttpClient(httpParameters);
   }
+
+  /**
+   * Open a URI using the context of the downloader (auth, cookies etc)
+   *
+   * @param uri
+   * @return Entity of response
+   * @throws IOException
+   */
+  public HttpEntity openUri(Uri uri) throws IOException {
+    HttpClient httpClient = Downloader.newHttpClient();
+    HttpResponse response = httpClient.execute(new HttpGet(URI.create(uri.toString())), httpContext);
+    return response.getEntity();
+  }
+
 }
