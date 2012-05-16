@@ -11,12 +11,12 @@
                         android:maxLength="8"
 
         />
-      <EditTextPreference android:key="customer_email"
+      <EditTextPreference android:key="customer_firstname"
                           android:title="@string/title_customer_firstname"
                           android:summary="@string/summary_customer_firstname"
                           android:inputType="textCapWords"
           />
-      <EditTextPreference android:key="customer_email"
+      <EditTextPreference android:key="customer_lastname"
                           android:title="@string/title_customer_lastname"
                           android:summary="@string/summary_customer_lastname"
                           android:inputType="textCapWords"
