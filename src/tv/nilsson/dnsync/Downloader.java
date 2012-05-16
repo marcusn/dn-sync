@@ -62,14 +62,14 @@ public class Downloader {
       doLogin();
       HttpClient httpClient = newHttpClient();
 
-      HttpGet request = new HttpGet(Uri.parse(SERVICE_ENDPOINT).toString());
+      HttpGet request = new HttpGet(SERVICE_ENDPOINT);
       HttpResponse response = httpClient.execute(request, httpContext);
 
       if (response.getStatusLine().getStatusCode() != 200) throw new DownloadUnexpectedResponseException();
 
       String s = extractEntity(response);
 
-      Pattern pattern = Pattern.compile("Alla delar.*\\(\\d+\\)-\\(\\d+\\)-\\(\\d+\\)");
+      Pattern pattern = Pattern.compile("Alla delar.*(\\d+)-(\\d+)-(\\d+)");
 
       Matcher matcher = pattern.matcher(s);
       if (matcher.find()) {
@@ -97,11 +97,31 @@ public class Downloader {
 
     return false;
   }
+
+  private String fetchCsrfToken() throws IOException, DownloadException {
+    HttpClient httpClient = newHttpClient();
+
+    HttpResponse response = httpClient.execute(new HttpGet(LOGIN_ENDPOINT), httpContext);
+
+    if (response.getStatusLine().getStatusCode() != 200) throw new DownloadUnexpectedResponseException();
+
+    String responseString = extractEntity(response);
+    Pattern pattern = Pattern.compile("name='csrfmiddlewaretoken' value='(.*?)'");
+
+    Matcher matcher = pattern.matcher(responseString);
+    boolean found = matcher.find();
+    if (!found) throw new DownloadUnexpectedResponseException();
+
+    return matcher.group(1);
+  }
+
   private void doLogin() throws IOException, DownloadException {
     HttpClient httpClient = newHttpClient();
 
+    String csrfToken = fetchCsrfToken();
+
     List<NameValuePair> params = new ArrayList<NameValuePair>();
-    params.add(new BasicNameValuePair("csrfmiddlewaretoken", ""));
+    params.add(new BasicNameValuePair("csrfmiddlewaretoken", csrfToken));
     params.add(new BasicNameValuePair("plugin_template", "first_page"));
     params.add(new BasicNameValuePair("redirect_to", ""));
     params.add(new BasicNameValuePair("customer_number", customerNr));
