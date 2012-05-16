@@ -13,4 +13,8 @@
   <string name="title_options_sync_3g">Sync over 3G</string>
   <string name="title_options_sync_wifi">Sync over WIFI</string>
   <string name="title_sync_enabled">Sync</string>
+  <string name="title_customer_firstname">Firstname</string>
+  <string name="title_customer_lastname">Lastname</string>
+  <string name="summary_customer_firstname">Firstname</string>
+  <string name="summary_customer_lastname">Lastname</string>
 </resources>

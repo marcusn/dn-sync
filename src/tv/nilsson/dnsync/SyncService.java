@@ -138,7 +138,7 @@ public class SyncService extends IntentService {
     try {
       if (!isAllowed()) return;
       setSyncStatus(new SyncStatus("Contacting DN"));
-      download(preferences.getString("customer_nr", ""), preferences.getString("customer_email", ""));
+      download(preferences.getString("customer_nr", ""), preferences.getString("customer_firstname", ""), preferences.getString("customer_lastname", ""));
     }
     catch(IOException e) {
       setSyncStatus(new SyncStatus("Sync Failed"));
@@ -162,16 +162,16 @@ public class SyncService extends IntentService {
     }
   }
 
-  public void download(String customerNr, String email) throws IOException, DownloadException {
-    if ("".equals(customerNr) || "".equals(email)) {
+  public void download(String customerNr, String firstName, String lastName) throws IOException, DownloadException {
+    if ("".equals(customerNr) || "".equals(firstName) || "".equals(lastName)) {
         setSyncStatus(new SyncStatus("No authentication details"));
         return;
     }
 
     customerNr = customerNr.trim();
-    email = email.trim();
+    firstName = firstName.trim();
 
-    Downloader downloader = new Downloader(customerNr, email);
+    Downloader downloader = new Downloader(customerNr, firstName, lastName);
 
     final Downloader.DownloadInfo downloadInfo = downloader.obtainDownloadInfo();
 
