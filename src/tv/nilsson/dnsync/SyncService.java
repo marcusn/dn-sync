@@ -187,30 +187,40 @@ public class SyncService extends IntentService {
     showDownloading();
     setSyncStatus(new SyncStatus("Downloading"));
 
-    Uri destination = Uri.fromFile(tempFile);
-
     try {
-        long totalSize = copy(downloadInfo.uri, destination, downloader);
 
-        if (totalSize != tempFile.length()) {
-            setSyncStatus(new SyncStatus("DN Download failed, invalid file size"));
-            tempFile.delete();
-            return;
-        }
-    }
-    catch(IOException e) {
-        setSyncStatus(new SyncStatus("DN Download failed"));
+      if (tryDownload(downloader, tempFile, downloadInfo.uri)) {
+        Uri destination = Uri.fromFile(file);
+        tempFile.renameTo(file);
+        notifyDownloaded(destination);
+
+        setSyncStatus(new SyncStatus("Downloaded"));
+
+      } else {
         tempFile.delete();
-        return;
+      }
+
     }
     finally {
       notificationManager.cancel(ID_ONGOING);
     }
+  }
 
-    tempFile.renameTo(file);
-    notifyDownloaded(destination);
+  private boolean tryDownload(Downloader downloader, File file, Uri source) {
+    try {
+        long totalSize = copy(source, Uri.fromFile(file), downloader);
 
-    setSyncStatus(new SyncStatus("Downloaded"));
+        if (totalSize != file.length()) {
+            setSyncStatus(new SyncStatus("DN Download failed, invalid file size"));
+            return false;
+        } else {
+            return true;
+        }
+    }
+    catch(IOException e) {
+        setSyncStatus(new SyncStatus("DN Download failed"));
+        return false;
+    }
   }
 
   private long copy(Uri source, Uri destination, Downloader downloader) throws IOException {
