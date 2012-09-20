@@ -36,6 +36,7 @@ public class SyncService extends IntentService {
   private static PowerManager.WakeLock wakeLock=null;
   private Handler handler;
   private static final int ID_ONGOING = 1;
+  private static final int ID_FINISHED = 2;
   private NotificationManager notificationManager;
   private Notification ongoingNotification;
 
@@ -294,7 +295,7 @@ public class SyncService extends IntentService {
     notification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
     notification.flags = Notification.FLAG_AUTO_CANCEL;
     NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-    notificationManager.notify(ID_ONGOING, notification);
+    notificationManager.notify(ID_FINISHED, notification);
 
   }
 }
