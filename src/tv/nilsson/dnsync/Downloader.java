@@ -71,12 +71,12 @@ public class Downloader {
 
       String s = extractEntity(response);
 
-      Pattern pattern = Pattern.compile("Alla delar.*?(\\d+)-(\\d+)-(\\d+)");
+      Pattern pattern = Pattern.compile("day/(\\d\\d\\d\\d)(\\d\\d)(\\d\\d)/DN.pdf");
 
       Matcher matcher = pattern.matcher(s);
       if (matcher.find()) {
         String filename = MessageFormat.format("{0}{1}{2}_DN.pdf", matcher.group(1), matcher.group(2), matcher.group(3));
-        Uri downloadUri = Uri.parse(SERVICE_ENDPOINT).buildUpon().appendQueryParameter("del", "DN").build();
+        Uri downloadUri = Uri.parse(SERVICE_ENDPOINT).buildUpon().appendPath(matcher.group(0)).appendQueryParameter("del", "DN").build();
 
         return new DownloadInfo(downloadUri, filename);
       }
