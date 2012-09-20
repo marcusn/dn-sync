@@ -21,15 +21,11 @@ import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -181,36 +177,37 @@ public class SyncService extends IntentService {
     downloads.mkdir();
 
     final File file = new File(downloads, downloadInfo.filename);
+    final File tempFile = new File(downloads, downloadInfo.filename + ".tmp");
 
     if (file.exists()) {
       setSyncStatus(new SyncStatus("No new DN is available"));
       return;
     }
 
-    Uri destination = Uri.fromFile(file);
-
-    showDownloading(destination, "Downloading");
-
+    showDownloading();
     setSyncStatus(new SyncStatus("Downloading"));
+
+    Uri destination = Uri.fromFile(tempFile);
 
     try {
         long totalSize = copy(downloadInfo.uri, destination, downloader);
 
-        if (totalSize != file.length()) {
+        if (totalSize != tempFile.length()) {
             setSyncStatus(new SyncStatus("DN Download failed, invalid file size"));
-            file.delete();
+            tempFile.delete();
             return;
         }
     }
     catch(IOException e) {
         setSyncStatus(new SyncStatus("DN Download failed"));
-        file.delete();
+        tempFile.delete();
         return;
     }
     finally {
       notificationManager.cancel(ID_ONGOING);
     }
 
+    tempFile.renameTo(file);
     notifyDownloaded(destination);
 
     setSyncStatus(new SyncStatus("Downloaded"));
@@ -255,9 +252,7 @@ public class SyncService extends IntentService {
       return total;
   }
 
-  private void showDownloading(Uri localFileName, String contentTitle) {
-
-    CharSequence contentText = localFileName.getLastPathSegment();
+  private void showDownloading() {
     Intent notificationIntent = new Intent(this, SyncService.class);
     PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
