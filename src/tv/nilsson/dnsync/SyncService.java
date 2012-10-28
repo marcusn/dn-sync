@@ -233,6 +233,9 @@ public class SyncService extends IntentService {
 
     long total = entity.getContentLength();
     if (total == 0) return 0;
+    boolean hasTotal = total > 0; // -1 indicates chunked encoding
+
+    if (!hasTotal) total = 50 * 1024 * 1024; // Guess to get progress
 
     byte[] buf = new byte[65536];
 
@@ -241,7 +244,7 @@ public class SyncService extends IntentService {
     int progress = 0;
     do {
       bytesRead = inputStream.read(buf);
-      current += bytesRead;
+      if (bytesRead > 0) current += bytesRead;
       {
         int newProgress = (int) (current * 100 / total);
         if (newProgress != progress) {
@@ -260,7 +263,7 @@ public class SyncService extends IntentService {
 
       outputStream.close();
 
-      return total;
+    return hasTotal ? total : current;
   }
 
   private void showDownloading() {
