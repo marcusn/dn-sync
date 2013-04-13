@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Environment;
@@ -103,19 +104,15 @@ public class SyncService extends IntentService {
     if (!preferences.getBoolean("sync_enabled", false)) return false;
 
     ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-    if (preferences.getBoolean("sync_wifi", false) && connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()) return true;
-    if (preferences.getBoolean("sync_3g", false) && connManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnected()) return true;
+    if (preferences.getBoolean("sync_wifi", false) && isConnected(connManager, ConnectivityManager.TYPE_WIFI)) return true;
+    if (preferences.getBoolean("sync_3g", false) && isConnected(connManager, ConnectivityManager.TYPE_MOBILE)) return true;
 
     return false;
   }
 
-  private void toast(final String message) {
-    final Context context = this;
-    handler.post(new Runnable() {
-      public void run() {
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
-      }
-    });
+  private boolean isConnected(ConnectivityManager connManager, int networkType) {
+    NetworkInfo networkInfo = connManager.getNetworkInfo(networkType);
+    return networkInfo != null && networkInfo.isConnected();
   }
 
   @Override
