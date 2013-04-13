@@ -127,8 +127,7 @@ public class Downloader {
     params.add(new BasicNameValuePair("plugin_template", "first_page"));
     params.add(new BasicNameValuePair("redirect_to", ""));
     params.add(new BasicNameValuePair("customer_number", customerNr));
-    params.add(new BasicNameValuePair("first_name", firstName));
-    params.add(new BasicNameValuePair("last_name", lastName));
+    params.add(new BasicNameValuePair("full_name", firstName + " " + lastName));
 
     HttpPost request = new HttpPost(LOGIN_ENDPOINT);
     request.addHeader("Referer", LOGIN_ENDPOINT);
