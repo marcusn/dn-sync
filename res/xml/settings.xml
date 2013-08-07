@@ -4,22 +4,15 @@
   <CheckBoxPreference android:key="sync_enabled" android:title="@string/title_sync_enabled" android:defaultValue="true"/>
   <PreferenceScreen android:title="@string/title_sync" android:key="sync"/>
   <PreferenceCategory android:title="@string/title_category_auth">
-    <EditTextPreference android:key="customer_nr"
-                        android:title="@string/title_customer_nr"
-                        android:summary="@string/summary_customer_nr"
-                        android:inputType="number"
-                        android:maxLength="8"
-
-        />
-      <EditTextPreference android:key="customer_firstname"
-                          android:title="@string/title_customer_firstname"
-                          android:summary="@string/summary_customer_firstname"
-                          android:inputType="textCapWords"
+      <EditTextPreference android:key="customer_email"
+                          android:title="@string/title_customer_email"
+                          android:summary="@string/summary_customer_email"
+                          android:inputType="textEmailAddress"
           />
-      <EditTextPreference android:key="customer_lastname"
-                          android:title="@string/title_customer_lastname"
-                          android:summary="@string/summary_customer_lastname"
-                          android:inputType="textCapWords"
+      <EditTextPreference android:key="customer_password"
+                          android:title="@string/title_customer_password"
+                          android:summary="@string/summary_customer_password"
+                          android:inputType="textPassword"
           />
   </PreferenceCategory>
   <PreferenceCategory android:title="@string/title_category_options">

@@ -33,9 +33,8 @@ public class Downloader {
   private static String SERVICE_ENDPOINT = "http://kund.dn.se/service/pdf/";
   private static String LOGIN_ENDPOINT = "http://kund.dn.se/";
   public static final int TIMEOUT_MS = 30000;
-  private String customerNr;
-  private String firstName;
-  private String lastName;
+  private String email;
+  private String password;
   private HttpContext httpContext;
   private final BasicCookieStore cookieStore;
 
@@ -49,10 +48,9 @@ public class Downloader {
     }
   }
 
-  public Downloader(String customerNr, String firstName, String lastName) {
-    this.customerNr = customerNr;
-    this.firstName = firstName;
-    this.lastName = lastName;
+  public Downloader(String email, String password) {
+    this.email = email;
+    this.password = password;
 
     this.httpContext = new BasicHttpContext();
     this.cookieStore = new BasicCookieStore();
@@ -126,8 +124,8 @@ public class Downloader {
     params.add(new BasicNameValuePair("csrfmiddlewaretoken", csrfToken));
     params.add(new BasicNameValuePair("plugin_template", "first_page"));
     params.add(new BasicNameValuePair("redirect_to", ""));
-    params.add(new BasicNameValuePair("customer_number", customerNr));
-    params.add(new BasicNameValuePair("full_name", firstName + " " + lastName));
+    params.add(new BasicNameValuePair("email", email));
+    params.add(new BasicNameValuePair("password", password));
 
     HttpPost request = new HttpPost(LOGIN_ENDPOINT);
     request.addHeader("Referer", LOGIN_ENDPOINT);

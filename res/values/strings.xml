@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">DN Sync</string>
-  <string name="title_customer_nr">Customer Nr</string>
-  <string name="summary_customer_nr">Customer Number (8 digits)</string>
-  <string name="title_customer_email">Email</string>
-  <string name="summary_customer_email">Email</string>
   <string name="title_category_auth">Authentication</string>
   <string name="title_sync">Syncronize Now</string>
   <string name="title_category_actions">Actions</string>
@@ -13,8 +9,8 @@
   <string name="title_options_sync_3g">Sync over 3G</string>
   <string name="title_options_sync_wifi">Sync over WIFI</string>
   <string name="title_sync_enabled">Sync</string>
-  <string name="title_customer_firstname">Firstname</string>
-  <string name="title_customer_lastname">Lastname</string>
-  <string name="summary_customer_firstname">Firstname</string>
-  <string name="summary_customer_lastname">Lastname</string>
+  <string name="title_customer_email">Email</string>
+  <string name="title_customer_password">Password</string>
+  <string name="summary_customer_email">Email</string>
+  <string name="summary_customer_password">Password</string>
 </resources>

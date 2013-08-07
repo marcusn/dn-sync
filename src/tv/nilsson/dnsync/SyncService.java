@@ -20,7 +20,6 @@ import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 import org.apache.http.HttpEntity;
 
 import java.io.File;
@@ -132,7 +131,7 @@ public class SyncService extends IntentService {
     try {
       if (!isAllowed()) return;
       setSyncStatus(new SyncStatus("Contacting DN"));
-      download(preferences.getString("customer_nr", ""), preferences.getString("customer_firstname", ""), preferences.getString("customer_lastname", ""));
+      download(preferences.getString("customer_email", ""), preferences.getString("customer_password", ""));
     }
     catch(IOException e) {
       setSyncStatus(new SyncStatus("Sync Failed"));
@@ -156,17 +155,16 @@ public class SyncService extends IntentService {
     }
   }
 
-  public void download(String customerNr, String firstName, String lastName) throws IOException, DownloadException {
-    if ("".equals(customerNr) || "".equals(firstName) || "".equals(lastName)) {
+  public void download(String email, String password) throws IOException, DownloadException {
+    if ("".equals(email) || "".equals(password)) {
         setSyncStatus(new SyncStatus("No authentication details"));
         return;
     }
 
-    customerNr = customerNr.trim();
-    firstName = firstName.trim();
-    lastName = lastName.trim();
+    email = email.trim();
+    password = password.trim();
 
-    Downloader downloader = new Downloader(customerNr, firstName, lastName);
+    Downloader downloader = new Downloader(email, password);
 
     final Downloader.DownloadInfo downloadInfo = downloader.obtainDownloadInfo();
 
