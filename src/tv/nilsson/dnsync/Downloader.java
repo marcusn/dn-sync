@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 
 public class Downloader {
   private static String SERVICE_ENDPOINT = "http://kund.dn.se/service/pdf/";
-  private static String LOGIN_ENDPOINT = "http://kund.dn.se/";
+  private static String LOGIN_ENDPOINT = "https://kund.dn.se/";
   public static final int TIMEOUT_MS = 30000;
   private String email;
   private String password;
