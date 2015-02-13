@@ -31,8 +31,8 @@ import java.util.regex.Pattern;
 
 public class Downloader {
   private static String SERVICE_ENDPOINT = "https://kund.dn.se/service/pdf/";
-  private static String LOGIN_ENDPOINT = "https://auth.dn.se/security/authenticate?appId=dagensnyheter.se&lc=sv&callback=https%3A%2F%2Fkund.dn.se%2Fservice%2Floginplus%3Fredirect%3D%2F";
-  private static String LOGIN_FORM_ENDPOINT = "https://auth.dn.se/login?appId=dagensnyheter.se&lc=sv&callback=https%3A%2F%2Fkund.dn.se%2Fservice%2Floginplus%3Fredirect%3D%2F";
+  private static String LOGIN_ENDPOINT = "http://auth.dn.se/security/authenticate?appId=dagensnyheter.se&lc=sv&callback=https%3A%2F%2Fkund.dn.se%2Fservice%2Floginplus%3Fredirect%3D%2F";
+  private static String LOGIN_FORM_ENDPOINT = "http://auth.dn.se/login?appId=dagensnyheter.se&lc=sv&callback=https%3A%2F%2Fkund.dn.se%2Fservice%2Floginplus%3Fredirect%3D%2F";
   public static final int TIMEOUT_MS = 30000;
   private String email;
   private String password;
@@ -115,6 +115,11 @@ public class Downloader {
 
     int status = response.getStatusLine().getStatusCode();
     if (status != 200) {
+      throw new AuthenticationFailedException();
+    }
+
+    String responseString = extractEntity(response);
+    if (responseString.contains("felaktigt")) {
       throw new AuthenticationFailedException();
     }
 
