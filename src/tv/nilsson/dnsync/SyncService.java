@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -222,15 +223,11 @@ public class SyncService extends IntentService {
   private long copy(Uri source, Uri destination, Downloader downloader) throws IOException {
     ContentResolver contentResolver = getContentResolver();
 
-    HttpEntity entity = downloader.openUri(source);
-    InputStream inputStream = (InputStream) entity.getContent();
+    URLConnection urlConnection = downloader.openURL(source.toString());
+    InputStream inputStream = urlConnection.getInputStream();
     OutputStream outputStream = contentResolver.openOutputStream(destination, "w");
 
-    long total = entity.getContentLength();
-    if (total == 0) return 0;
-    boolean hasTotal = total > 0; // -1 indicates chunked encoding
-
-    if (!hasTotal) total = 50 * 1024 * 1024; // Guess to get progress
+    long total = 50 * 1024 * 1024; // Guess to get progress
 
     byte[] buf = new byte[65536];
 
@@ -258,7 +255,7 @@ public class SyncService extends IntentService {
 
       outputStream.close();
 
-    return hasTotal ? total : current;
+    return current;
   }
 
   private void showDownloading() {
