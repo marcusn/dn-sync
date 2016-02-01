@@ -15,7 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Downloader {
-  private static String SERVICE_ENDPOINT = "https://kund.dn.se/service/pdf/";
+  private static String SERVICE_ENDPOINT = "https://kund.dn.se/mitt-konto/dn-som-pdf/";
   private static String LOGIN_ENDPOINT = "https://auth.dn.se/security/authenticate";
   private static String LOGIN_FORM_ENDPOINT = "https://auth.dn.se/login?appId=dagensnyheter.se&lc=sv&callback=https%3A%2F%2Fkund.dn.se%2Fservice%2Floginplus%3Fredirect%3D%2F";
   public static final int TIMEOUT_MS = 30000;
